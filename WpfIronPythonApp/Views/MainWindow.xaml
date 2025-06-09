@@ -1,0 +1,143 @@
+<Window x:Class="WpfIronPythonApp.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        Title="WPF IronPython 巨集編輯器" Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen">
+    
+    <DockPanel>
+        <!-- 選單列 -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="檔案(_F)">
+                <MenuItem Header="新建(_N)" Click="NewFile_Click"/>
+                <MenuItem Header="開啟(_O)..." Click="OpenFile_Click"/>
+                <MenuItem Header="儲存(_S)" Click="SaveFile_Click"/>
+                <MenuItem Header="另存為(_A)..." Click="SaveAsFile_Click"/>
+                <Separator/>
+                <MenuItem Header="結束(_X)" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="腳本(_S)">
+                <MenuItem Header="執行腳本(_R)" Click="RunScript_Click"/>
+                <MenuItem Header="停止執行(_S)" Click="StopScript_Click"/>
+                <MenuItem Header="重置環境(_E)" Click="ResetEnvironment_Click"/>
+            </MenuItem>
+            <MenuItem Header="工具(_T)">
+                <MenuItem Header="API 管理器(_A)..." Click="ApiManager_Click">
+                    <MenuItem.Icon>
+                        <TextBlock Text="🔧" FontSize="12"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="生成 API 文件(_D)..." Click="GenerateApiDocs_Click">
+                    <MenuItem.Icon>
+                        <TextBlock Text="📄" FontSize="12"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="重新載入 IntelliSense(_I)" Click="ReloadIntelliSense_Click">
+                    <MenuItem.Icon>
+                        <TextBlock Text="🔄" FontSize="12"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <!-- 工具列 -->
+        <ToolBar DockPanel.Dock="Top">
+            <Button Content="新建" Click="NewFile_Click"/>
+            <Button Content="開啟" Click="OpenFile_Click"/>
+            <Button Content="儲存" Click="SaveFile_Click"/>
+            <Separator/>
+            <Button Name="RunButton" Content="執行" Click="RunScript_Click"/>
+            <Button Name="StopButton" Content="停止" Click="StopScript_Click" IsEnabled="False"/>
+            <Button Content="重置" Click="ResetEnvironment_Click"/>
+        </ToolBar>
+
+        <!-- 狀態列 -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Name="StatusText" Text="就緒"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- 主內容區域 -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 編輯器區域 -->
+            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1">
+                <avalonedit:TextEditor 
+                    Name="PythonEditor"
+                    FontFamily="Consolas" 
+                    FontSize="12"
+                    ShowLineNumbers="True"
+                    SyntaxHighlighting="Python"
+                    TextChanged="PythonEditor_TextChanged">
+                    <avalonedit:TextEditor.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="AI 助手">
+                                <MenuItem Header="獲取程式碼建議" Click="GetAISuggestion_Click">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="💡" FontSize="12"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="優化程式碼" Click="OptimizeCode_Click">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="⚡" FontSize="12"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="解釋程式碼" Click="ExplainCode_Click">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="📝" FontSize="12"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="修復程式碼" Click="FixCode_Click">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="🔧" FontSize="12"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="復原" Click="Undo_Click"/>
+                            <MenuItem Header="重做" Click="Redo_Click"/>
+                            <Separator/>
+                            <MenuItem Header="剪下" Click="Cut_Click"/>
+                            <MenuItem Header="複製" Click="Copy_Click"/>
+                            <MenuItem Header="貼上" Click="Paste_Click"/>
+                            <Separator/>
+                            <MenuItem Header="全選" Click="SelectAll_Click"/>
+                        </ContextMenu>
+                    </avalonedit:TextEditor.ContextMenu>
+                </avalonedit:TextEditor>
+            </Border>
+
+            <!-- 分隔條 -->
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" 
+                          Background="LightGray"/>
+
+            <!-- 輸出區域 -->
+            <TabControl Grid.Row="2">
+                <TabItem Header="執行輸出">
+                    <TextBox Name="OutputTextBox" 
+                             FontFamily="Consolas" 
+                             FontSize="11"
+                             IsReadOnly="True" 
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap"/>
+                </TabItem>
+                <TabItem Header="錯誤信息">
+                    <TextBox Name="ErrorTextBox" 
+                             FontFamily="Consolas" 
+                             FontSize="11"
+                             Foreground="Red"
+                             IsReadOnly="True" 
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap"/>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DockPanel>
+</Window> 

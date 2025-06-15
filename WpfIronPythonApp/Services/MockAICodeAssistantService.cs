@@ -17,7 +17,7 @@ namespace WpfIronPythonApp.Services
         public async Task<string> GetCodeSuggestionAsync(string selectedCode, string context = "")
         {
             // 模擬AI處理時間
-            await Task.Delay(1000 + _random.Next(1000));
+            await Task.Delay(10000 + _random.Next(1000));
 
             LoggingService.Instance.LogInfo($"AI請求: 為程式碼提供建議 - {selectedCode?.Substring(0, Math.Min(50, selectedCode?.Length ?? 0))}...");
 

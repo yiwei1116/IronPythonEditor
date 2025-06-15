@@ -68,51 +68,62 @@
             </Grid.RowDefinitions>
 
             <!-- 編輯器區域 -->
-            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1">
-                <avalonedit:TextEditor 
-                    Name="PythonEditor"
-                    FontFamily="Consolas" 
-                    FontSize="12"
-                    ShowLineNumbers="True"
-                    SyntaxHighlighting="Python"
-                    TextChanged="PythonEditor_TextChanged">
-                    <avalonedit:TextEditor.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="AI 助手">
-                                <MenuItem Header="獲取程式碼建議" Click="GetAISuggestion_Click">
-                                    <MenuItem.Icon>
-                                        <TextBlock Text="💡" FontSize="12"/>
-                                    </MenuItem.Icon>
+            <Grid Grid.Row="0">
+                <Border BorderBrush="Gray" BorderThickness="1">
+                    <avalonedit:TextEditor 
+                        Name="PythonEditor"
+                        FontFamily="Consolas" 
+                        FontSize="12"
+                        ShowLineNumbers="True"
+                        SyntaxHighlighting="Python"
+                        TextChanged="PythonEditor_TextChanged">
+                        <avalonedit:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="AI 助手">
+                                    <MenuItem Header="獲取程式碼建議" Click="GetAISuggestion_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="💡" FontSize="12"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="優化程式碼" Click="OptimizeCode_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="⚡" FontSize="12"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="解釋程式碼" Click="ExplainCode_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="📝" FontSize="12"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="修復程式碼" Click="FixCode_Click">
+                                        <MenuItem.Icon>
+                                            <TextBlock Text="🔧" FontSize="12"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
                                 </MenuItem>
-                                <MenuItem Header="優化程式碼" Click="OptimizeCode_Click">
-                                    <MenuItem.Icon>
-                                        <TextBlock Text="⚡" FontSize="12"/>
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Header="解釋程式碼" Click="ExplainCode_Click">
-                                    <MenuItem.Icon>
-                                        <TextBlock Text="📝" FontSize="12"/>
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Header="修復程式碼" Click="FixCode_Click">
-                                    <MenuItem.Icon>
-                                        <TextBlock Text="🔧" FontSize="12"/>
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                            </MenuItem>
-                            <Separator/>
-                            <MenuItem Header="復原" Click="Undo_Click"/>
-                            <MenuItem Header="重做" Click="Redo_Click"/>
-                            <Separator/>
-                            <MenuItem Header="剪下" Click="Cut_Click"/>
-                            <MenuItem Header="複製" Click="Copy_Click"/>
-                            <MenuItem Header="貼上" Click="Paste_Click"/>
-                            <Separator/>
-                            <MenuItem Header="全選" Click="SelectAll_Click"/>
-                        </ContextMenu>
-                    </avalonedit:TextEditor.ContextMenu>
-                </avalonedit:TextEditor>
-            </Border>
+                                <Separator/>
+                                <MenuItem Header="復原" Click="Undo_Click"/>
+                                <MenuItem Header="重做" Click="Redo_Click"/>
+                                <Separator/>
+                                <MenuItem Header="剪下" Click="Cut_Click"/>
+                                <MenuItem Header="複製" Click="Copy_Click"/>
+                                <MenuItem Header="貼上" Click="Paste_Click"/>
+                                <Separator/>
+                                <MenuItem Header="全選" Click="SelectAll_Click"/>
+                            </ContextMenu>
+                        </avalonedit:TextEditor.ContextMenu>
+                    </avalonedit:TextEditor>
+                </Border>
+                <!-- 行內動畫 Canvas，顯示於編輯器上方 -->
+                <Canvas Name="InlineLoadingCanvas" IsHitTestVisible="False" />
+                <!-- 覆蓋層：只蓋住編輯器 -->
+                <Grid Name="EditorLoadingOverlay" Background="#80000080" Visibility="Collapsed" Panel.ZIndex="99">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="200" Height="20"/>
+                        <TextBlock Text="AI 回應中，請稍候..." Foreground="White" FontSize="16" Margin="0,16,0,0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
 
             <!-- 分隔條 -->
             <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" 
@@ -138,6 +149,13 @@
                              TextWrapping="Wrap"/>
                 </TabItem>
             </TabControl>
+        </Grid>
+        <!-- 等待動畫覆蓋層 -->
+        <Grid Name="LoadingOverlay" Background="#80000080" Visibility="Collapsed" Panel.ZIndex="99">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="20"/>
+                <TextBlock Text="AI 回應中，請稍候..." Foreground="White" FontSize="16" Margin="0,16,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
         </Grid>
     </DockPanel>
 </Window> 

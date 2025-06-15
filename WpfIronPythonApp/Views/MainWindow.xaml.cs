@@ -12,6 +12,9 @@ using WpfIronPythonApp.Services.ApiRegistry;
 using WpfIronPythonApp.IntelliSense;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using System.Windows.Controls;
+using ICSharpCode.AvalonEdit.Rendering;
+using System.Windows.Media;
 
 namespace WpfIronPythonApp.Views
 {
@@ -30,6 +33,13 @@ namespace WpfIronPythonApp.Views
         private Document? _currentDocument;
         private CancellationTokenSource? _scriptCancellationSource;
         private bool _isScriptRunning = false;
+        private System.Windows.Controls.TextBlock? _inlineLoadingBlock;
+        private System.Windows.Threading.DispatcherTimer? _inlineLoadingTimer;
+        private int _inlineLoadingDotCount = 1;
+        private InlineLoadingElementGenerator? _inlineBubbleGenerator;
+        private System.Windows.Threading.DispatcherTimer? _inlineBubbleTimer;
+        private int _inlineBubbleDotCount = 1;
+        private TextBlock _dotsBlock;
 
         public MainWindow()
         {
@@ -627,6 +637,7 @@ print('IronPython 腳本執行成功!')";
 
             try
             {
+                ShowInlineLoading(); // 顯示行內動畫
                 UpdateStatusBar("AI 助手處理中...");
 
                 // 獲取選取的程式碼或全部程式碼
@@ -695,6 +706,10 @@ print('IronPython 腳本執行成功!')";
                 MessageBox.Show($"AI 請求失敗: {ex.Message}", "錯誤", MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatusBar("AI 請求失敗");
             }
+            finally
+            {
+                HideInlineLoading(); // 隱藏行內動畫
+            }
         }
 
         /// <summary>
@@ -710,6 +725,47 @@ print('IronPython 腳本執行成功!')";
                 "fix" => "修復",
                 _ => "處理"
             };
+        }
+
+        private void ShowInlineLoading()
+        {
+            int offset = PythonEditor.SelectionLength > 0
+                ? PythonEditor.SelectionStart + PythonEditor.SelectionLength
+                : PythonEditor.CaretOffset;
+
+            _inlineBubbleGenerator = new InlineLoadingElementGenerator(offset);
+            PythonEditor.TextArea.TextView.ElementGenerators.Add(_inlineBubbleGenerator);
+            PythonEditor.TextArea.TextView.InvalidateLayer(KnownLayer.Selection);
+
+            // 啟動動畫
+            _inlineBubbleDotCount = 1;
+            _inlineBubbleTimer = new System.Windows.Threading.DispatcherTimer();
+            _inlineBubbleTimer.Interval = TimeSpan.FromMilliseconds(400);
+            _inlineBubbleTimer.Tick += (s, e) =>
+            {
+                if (_inlineBubbleGenerator != null)
+                {
+                    string dots = new string('.', _inlineBubbleDotCount);
+                    _inlineBubbleGenerator.SetDots(dots);
+                    _inlineBubbleDotCount = _inlineBubbleDotCount % 3 + 1;
+                }
+            };
+            _inlineBubbleTimer.Start();
+        }
+
+        private void HideInlineLoading()
+        {
+            if (_inlineBubbleTimer != null)
+            {
+                _inlineBubbleTimer.Stop();
+                _inlineBubbleTimer = null;
+            }
+            if (_inlineBubbleGenerator != null)
+            {
+                PythonEditor.TextArea.TextView.ElementGenerators.Remove(_inlineBubbleGenerator);
+                PythonEditor.TextArea.TextView.InvalidateLayer(KnownLayer.Selection);
+                _inlineBubbleGenerator = null;
+            }
         }
 
         #endregion
@@ -932,5 +988,63 @@ print('IronPython 腳本執行成功!')";
         }
 
         public override System.Text.Encoding Encoding => System.Text.Encoding.UTF8;
+    }
+
+    /// <summary>
+    /// 行內 AI loading bubble 元素產生器，模仿 Copilot 風格
+    /// </summary>
+    public class InlineLoadingElementGenerator : VisualLineElementGenerator
+    {
+        public int Offset { get; set; }
+        public UIElement BubbleElement { get; }
+        private TextBlock _dotsBlock;
+        public InlineLoadingElementGenerator(int offset)
+        {
+            Offset = offset;
+            BubbleElement = CreateBubble();
+        }
+
+        private UIElement CreateBubble()
+        {
+            _dotsBlock = new TextBlock
+            {
+                Text = "...",
+                Foreground = Brushes.White,
+                FontSize = 8,
+                FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var border = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(220, 30, 144, 255)),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(8, 3, 8, 3),
+                Margin = new Thickness(6, 5, 2, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = _dotsBlock
+            };
+            return border;
+        }
+
+        public override int GetFirstInterestedOffset(int startOffset)
+        {
+            return Offset >= startOffset ? Offset : -1;
+        }
+
+        public override VisualLineElement? ConstructElement(int offset)
+        {
+            if (offset == Offset)
+            {
+                return new InlineObjectElement(0, BubbleElement);
+            }
+            return null;
+        }
+
+        public void SetDots(string dots)
+        {
+            _dotsBlock.Text = dots;
+        }
     }
 } 
